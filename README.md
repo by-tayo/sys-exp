@@ -53,6 +53,14 @@ DevOps Practices
 * Infrastructure as Code (IaC): Declarative configuration of Prometheus targets and agent labels.
 
 ---
+## FastAPI, Prometheus, and Grafana specs
+
+![FastAPI Main Page](images/main_api.png)
+![System Health](images/sys_health.png)
+![System Process](images/sys_process.png)
+![System Status](images/sys_status.png)
+![Prometheus Targets](images/prometh_targets.png)
+![Grafana Visualization](images/grafana_visualizations.png)
 
 ## Key Takeaways
 
