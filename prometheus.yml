@@ -12,5 +12,5 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:8000"]
         labels:
-          instance: "tayo's-laptop"
+          instance: "someone's-laptop"
           os: "windows"
