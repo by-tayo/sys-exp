@@ -2,6 +2,27 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
+# Alert rule definitions (CPU/memory/disk thresholds, exporter down,
+# anomaly detection). See alert_rules.yml.
+rule_files:
+  - "alert_rules.yml"
+
+# Where Prometheus sends firing alerts. Requires Alertmanager running
+# separately (see alertmanager.yml) — without it, rules still evaluate
+# and show up under Prometheus's /alerts page, they just won't be routed
+# anywhere (no email/Slack/webhook).
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["localhost:9093"]
+
+# Optional: forward all scraped samples to a long-term storage backend
+# (e.g. VictoriaMetrics or Thanos Receive) so history survives beyond
+# Prometheus's local retention window. Uncomment and point at your
+# remote_write-compatible endpoint to enable.
+# remote_write:
+#   - url: "http://localhost:8428/api/v1/write"   # e.g. VictoriaMetrics single-node
+
 scrape_configs:
 
   - job_name: "prometheus"
@@ -14,3 +35,12 @@ scrape_configs:
         labels:
           instance: "someone's-laptop"
           os: "windows"
+
+      # Multi-device monitoring: add one static_configs entry per additional
+      # laptop/agent, each running `python main.py --port <port>` on its own
+      # machine (optionally reachable over Tailscale for privacy). Prometheus
+      # aggregates them all under this one job by scraping every target.
+      # - targets: ["100.x.x.x:8000"]
+      #   labels:
+      #     instance: "second-laptop"
+      #     os: "linux"

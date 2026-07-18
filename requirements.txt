@@ -4,3 +4,4 @@ psutil
 prometheus_client
 scikit-learn
 numpy
+gputil

@@ -78,21 +78,89 @@ DevOps Practices
 
 ---
 
+## Alerting
+
+`alert_rules.yml` defines Prometheus alerting rules for CPU, memory, and disk
+thresholds, exporter downtime, and anomalous behavior (see below). Prometheus
+is configured (`prometheus.yml`) to evaluate these rules and send firing
+alerts to Alertmanager on `localhost:9093`. Rules evaluate and appear under
+Prometheus's `/alerts` page even without Alertmanager running — Alertmanager
+is only needed if you want alerts routed somewhere (email, Slack, a webhook).
+A reference config is provided in `alertmanager.yml`; fill in a real receiver
+and run `alertmanager --config.file=alertmanager.yml` alongside Prometheus.
+
+## GPU & Process Metrics
+
+* GPU load, memory used/total, and temperature are exposed per-GPU via
+  `/api/gpu` and the `system_gpu_*` Prometheus gauges, using
+  [GPUtil](https://github.com/anderskm/gputil) (NVIDIA GPUs only). On
+  machines without a supported GPU or without GPUtil installed, this
+  degrades gracefully to an empty list rather than erroring.
+* `/api/processes` now also returns each process's RSS memory, thread count,
+  and status, in addition to CPU/memory percent.
+
+## Anomaly Detection
+
+The `IsolationForest`-based `NetworkObserver` (`net_observer.py`) trains
+online on CPU/memory/network samples collected during Prometheus scrapes.
+Once at least 50 samples have been observed, `/api/anomaly` and the
+`system_anomaly_detected` gauge report whether the current sample looks
+anomalous relative to the model. The `AnomalousSystemBehavior` alert in
+`alert_rules.yml` fires off that gauge like any other threshold alert.
+
+## Cross-Platform Support
+
+The exporter runs on Windows, Linux, and macOS. Disk usage resolves the
+system drive root per-OS (`C:\` on Windows, `/` on Linux/macOS) instead of
+hardcoding a Windows path, and the reported hostname comes from
+`socket.gethostname()` rather than a fixed string.
+
+## Long-Term Metric Storage
+
+By default Prometheus only retains samples locally for its configured
+retention window. To keep history for long-term trend analysis, uncomment
+the `remote_write` block in `prometheus.yml` and point it at a
+remote-write-compatible backend such as
+[VictoriaMetrics](https://victoriametrics.com/) (single-node is a one-line
+Docker run) or Thanos Receive.
+
+## Multi-Device / Distributed Monitoring
+
+Prometheus aggregates metrics from multiple laptops by scraping multiple
+targets under the same job — this is the mechanism behind the "multiple
+laptops" goal above, no extra component needed. Run `python main.py --port
+<port>` on each machine (optionally reachable over Tailscale for privacy),
+then add one `static_configs` entry per machine to the `local-agent` job in
+`prometheus.yml`; a commented example is included there.
+
+---
+
 ## Future Enhancements
 
-### Short-Term Improvements
+### Recently Implemented
 
-* Implement Prometheus alerting rules for CPU, memory, or disk thresholds.
-* Expand agent metrics to include GPU and process-level insights.
+* ✅ Prometheus alerting rules for CPU, memory, and disk thresholds.
+* ✅ GPU and process-level metrics.
+* ✅ Anomaly detection wired up to a metric/endpoint/alert.
+* ✅ Multi-platform (Windows/Linux/macOS) agent support.
+* ✅ Long-term metric storage via optional remote_write.
+* ✅ Documented multi-device aggregation via Prometheus multi-target scraping.
 
-### Medium-Term Features
+### Remaining Medium-Term Work
 
-* Dynamic agent discovery and auto-registration in Prometheus.
-* Persistent storage of metrics for long-term trend analysis.
-* Horizontal Pod Autoscaler (HPA) integration if deployed in Kubernetes.
+* Dynamic agent discovery and auto-registration in Prometheus (currently
+  targets are added manually to `prometheus.yml`; Prometheus supports file-
+  or DNS-based service discovery for this).
+* Horizontal Pod Autoscaler (HPA) integration if deployed in Kubernetes —
+  not attempted here since it requires an actual cluster to build and test
+  against.
 
-### Long-Term Goals
+### Remaining Long-Term Goals
 
-* Multi-platform agent support (Linux, macOS).
-* Distributed system monitoring with centralized aggregation.
-* Machine learning-based anomaly detection and alerting.
+* True distributed aggregation beyond Prometheus's built-in multi-target
+  scraping (e.g. Thanos/Cortex-style global query view across multiple
+  independent Prometheus instances), if the project ever needs more than a
+  handful of devices.
+* Persisting the trained IsolationForest model to disk (so it survives
+  restarts) and retraining it on a rolling window instead of only once at
+  50 samples.
