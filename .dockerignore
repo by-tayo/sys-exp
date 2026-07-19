@@ -1,0 +1,12 @@
+.venv
+__pycache__
+*.pyc
+.git
+.gitignore
+images
+*.md
+docker
+docker-compose.yml
+alert_rules.yml
+alertmanager.yml
+prometheus.yml

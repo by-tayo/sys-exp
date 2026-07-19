@@ -51,6 +51,7 @@ DevOps Practices
 
 * YAML: Configuration language for Prometheus scrape configs.
 * Infrastructure as Code (IaC): Declarative configuration of Prometheus targets and agent labels.
+* Docker & Docker Compose: Containerizes the exporter and runs the full monitoring stack (exporter, Prometheus, Alertmanager, Grafana) with one command.
 
 ---
 ## FastAPI, Prometheus, and Grafana specs
@@ -77,6 +78,38 @@ DevOps Practices
 * Handling multiple ports and secure agent connections using Tailscale.
 
 ---
+
+## Running with Docker
+
+The whole stack — exporter, Prometheus, Alertmanager, and Grafana — runs
+with a single command via `docker-compose.yml`:
+
+```
+docker compose up --build
+```
+
+| Service      | URL                              |
+|--------------|-----------------------------------|
+| Exporter API | http://localhost:8000/docs        |
+| Prometheus   | http://localhost:9090             |
+| Alertmanager | http://localhost:9093             |
+| Grafana      | http://localhost:3000 (admin/admin) |
+
+The exporter's `Dockerfile` builds a standalone image (`docker compose build
+exporter` or `docker build -t sys-exp .`) that can also run on its own:
+
+```
+docker run -p 8000:8000 sys-exp
+```
+
+Inside the compose network, containers reach each other by service name, so
+Prometheus is configured to scrape `exporter:8000` and alert to
+`alertmanager:9093` via `docker/prometheus.yml` — a container-networking
+variant of the root `prometheus.yml`, which still targets `localhost` for
+running services directly on the host without Docker.
+
+Tear down with `docker compose down` (add `-v` to also drop the Prometheus
+and Grafana data volumes).
 
 ## Alerting
 
@@ -145,6 +178,7 @@ then add one `static_configs` entry per machine to the `local-agent` job in
 * ✅ Multi-platform (Windows/Linux/macOS) agent support.
 * ✅ Long-term metric storage via optional remote_write.
 * ✅ Documented multi-device aggregation via Prometheus multi-target scraping.
+* ✅ Dockerfile + Docker Compose stack (exporter, Prometheus, Alertmanager, Grafana).
 
 ### Remaining Medium-Term Work
 
