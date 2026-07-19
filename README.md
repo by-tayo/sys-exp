@@ -33,8 +33,7 @@ The application showcases modern DevOps and monitoring practices, including syst
 ### Development
 
 * Python: Programming language for building the monitoring agents.
-* Flask: Lightweight web framework to expose system metrics via HTTP.
-* Flasgger: Adds Swagger UI documentation for the agent APIs.
+* FastAPI: Web framework used to expose system metrics and REST endpoints via HTTP, with built-in interactive Swagger UI docs at `/docs`.
 * Command Prompt (CMD): Windows terminal used for running Python scripts, Prometheus, and system commands.
 
 ### Monitoring & Observability
@@ -52,6 +51,23 @@ DevOps Practices
 * YAML: Configuration language for Prometheus scrape configs.
 * Infrastructure as Code (IaC): Declarative configuration of Prometheus targets and agent labels.
 * Docker & Docker Compose: Containerizes the exporter and runs the full monitoring stack (exporter, Prometheus, Alertmanager, Grafana) with one command.
+
+---
+
+## Project Structure
+
+| File                    | Purpose |
+|--------------------------|---------|
+| `main.py`                 | FastAPI app — the exporter agent. Defines `/metrics`, `/api/*` endpoints, and Prometheus gauges. |
+| `metrics.py`               | Cross-platform system metric collection (CPU, memory, disk, network, processes, GPU) via psutil/GPUtil. |
+| `net_observer.py`          | `IsolationForest`-based anomaly detector used by `main.py`. |
+| `prometheus.yml`           | Prometheus config for running natively on the host — scrapes the exporter at `localhost:8000`. |
+| `docker/prometheus.yml`    | Prometheus config for the Docker Compose stack — scrapes the exporter at `exporter:8000` (containers address each other by service name, not `localhost`). These two files intentionally differ only in target hostnames; both are needed, one per run mode. |
+| `alert_rules.yml`          | Prometheus alerting rules (CPU/memory/disk thresholds, exporter down, anomaly detection). Shared by both `prometheus.yml` variants. |
+| `alertmanager.yml`         | Reference Alertmanager config for routing fired alerts (email/Slack/webhook). |
+| `Dockerfile`               | Builds the exporter into a standalone image. |
+| `docker-compose.yml`       | Brings up exporter + Prometheus + Alertmanager + Grafana together. |
+| `requirements.txt`         | Python dependencies. |
 
 ---
 ## FastAPI, Prometheus, and Grafana specs
