@@ -78,10 +78,10 @@ DevOps Practices
 ![System Status](images/sys_status.png)
 ![Prometheus Targets](images/prometh_targets.png)
 ![Grafana Visualization](images/grafana_visualizations.png)
-![Docker System Exporter](images/sys-exp-doc-1.png)
-![CPU/Memory Disk](images/sys-exp-1.png)
-![System Exporter Snapshot](images/sys-exp-4.png)
-![System Exporter Docker](images/sys-exp-doc-6.png)
+![Docker System Exporter](images/sys_exp_doc_1.png)
+![CPU/Memory Disk](images/sys_exp_1.png)
+![System Exporter Snapshot](images/sys_exp_4.png)
+![System Exporter Docker](images/sys_exp_doc_6.png)
 
 ## Key Takeaways
 
