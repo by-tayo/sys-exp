@@ -26,3 +26,14 @@ scrape_configs:
         labels:
           instance: "docker-exporter"
           os: "linux"
+
+      # Optional: also scrape an exporter running natively on the host
+      # (python main.py --port 8001) alongside this compose stack, to get
+      # real host-level metrics (actual hostname, disk, network, battery)
+      # instead of just the container's own virtualized view.
+      # host.docker.internal lets containers reach the host on Docker
+      # Desktop (Windows/Mac). Uncomment to enable:
+      # - targets: ["host.docker.internal:8001"]
+      #   labels:
+      #     instance: "native-windows"
+      #     os: "windows"

@@ -16,6 +16,7 @@ from metrics import (
     get_disk_usage,
     get_network_usage,
     get_process_list,
+    get_process_detail,
     get_gpu_usage,
     get_system_info,
 )
@@ -143,6 +144,8 @@ def api_system():
 def api_processes(limit: int = Query(default=10, le=50, description="Number of processes to return")):
     """Returns processes sorted by CPU usage descending, with memory/thread/status detail."""
     procs = sorted(get_process_list(), key=lambda p: p["cpu_percent"], reverse=True)[:limit]
+    for proc in procs:
+        proc.update(get_process_detail(proc["pid"]))
     return procs
 
 

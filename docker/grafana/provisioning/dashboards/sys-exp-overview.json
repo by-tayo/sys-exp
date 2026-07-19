@@ -1,0 +1,100 @@
+{
+  "id": null,
+  "uid": "argpll",
+  "title": "sys-exp Overview",
+  "tags": ["sys-exp"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-30m", "to": "now" },
+  "panels": [
+    {
+      "id": 10,
+      "title": "System Snapshot",
+      "type": "table",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "system_cpu_usage_percent", "legendFormat": "CPU %", "refId": "A", "instant": true, "format": "table" },
+        { "expr": "system_memory_usage", "legendFormat": "Memory %", "refId": "B", "instant": true, "format": "table" },
+        { "expr": "system_disk_usage", "legendFormat": "Disk %", "refId": "C", "instant": true, "format": "table" },
+        { "expr": "system_battery_percent", "legendFormat": "Battery %", "refId": "D", "instant": true, "format": "table" },
+        { "expr": "system_process_count", "legendFormat": "Processes", "refId": "E", "instant": true, "format": "table" },
+        { "expr": "system_anomaly_detected", "legendFormat": "Anomaly", "refId": "F", "instant": true, "format": "table" },
+        { "expr": "system_gpu_usage_percent", "legendFormat": "GPU Load %", "refId": "G", "instant": true, "format": "table" },
+        { "expr": "system_gpu_memory_used_mb / system_gpu_memory_total_mb * 100", "legendFormat": "GPU Mem %", "refId": "H", "instant": true, "format": "table" },
+        { "expr": "up{job=\"local-agent\"}", "legendFormat": "Exporter Up", "refId": "I", "instant": true, "format": "table" }
+      ],
+      "transformations": [
+        { "id": "merge", "options": {} },
+        { "id": "organize", "options": { "excludeByName": { "Time": true, "__name__": true, "job": true, "gpu_id": true, "gpu_name": true, "host": true }, "indexByName": {}, "renameByName": { "instance": "Agent", "os": "OS" } } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "center", "cellOptions": { "type": "color-background" } },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 70 }, { "color": "red", "value": 90 } ] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Anomaly" }, "properties": [ { "id": "mappings", "value": [ { "type": "value", "options": { "0": { "text": "Normal", "color": "green" }, "1": { "text": "Anomalous", "color": "red" } } } ] }, { "id": "thresholds", "value": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] } } ] },
+          { "matcher": { "id": "byName", "options": "Exporter Up" }, "properties": [ { "id": "mappings", "value": [ { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } } ] }, { "id": "thresholds", "value": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] } } ] },
+          { "matcher": { "id": "byName", "options": "Processes" }, "properties": [ { "id": "thresholds", "value": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] } }, { "id": "custom.cellOptions", "value": { "type": "auto" } } ] }
+        ]
+      }
+    },
+    {
+      "id": 1,
+      "title": "CPU / Memory / Disk %",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 6, "w": 12, "h": 9 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "system_cpu_usage_percent", "legendFormat": "CPU ({{instance}})", "refId": "A" },
+        { "expr": "system_memory_usage", "legendFormat": "Memory ({{instance}})", "refId": "B" },
+        { "expr": "system_disk_usage", "legendFormat": "Disk ({{instance}})", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "min": 0, "max": 100,
+          "custom": { "thresholdsStyle": { "mode": "dashed" }, "fillOpacity": 10 },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 70 }, { "color": "red", "value": 85 } ] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byRegexp", "options": "^Memory" }, "properties": [ { "id": "thresholds", "value": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 75 }, { "color": "red", "value": 90 } ] } } ] },
+          { "matcher": { "id": "byRegexp", "options": "^Disk" }, "properties": [ { "id": "thresholds", "value": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 80 }, { "color": "red", "value": 90 }, { "color": "dark-red", "value": 97 } ] } } ] }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "title": "GPU Load / Memory",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 6, "w": 12, "h": 9 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "system_gpu_usage_percent", "legendFormat": "{{instance}} load %", "refId": "A" },
+        { "expr": "system_gpu_memory_used_mb / system_gpu_memory_total_mb * 100", "legendFormat": "{{instance}} mem %", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "min": 0, "max": 100,
+          "custom": { "thresholdsStyle": { "mode": "dashed" }, "fillOpacity": 10 },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 75 }, { "color": "red", "value": 90 } ] }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 3,
+      "title": "Network Throughput",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 15, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(system_network_sent_bytes[1m])", "legendFormat": "Sent ({{instance}})", "refId": "A" },
+        { "expr": "rate(system_network_received_bytes[1m])", "legendFormat": "Received ({{instance}})", "refId": "B" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "Bps", "custom": { "fillOpacity": 15 } }, "overrides": [] }
+    }
+  ]
+}
