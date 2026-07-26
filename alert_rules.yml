@@ -1,0 +1,60 @@
+groups:
+  - name: system-thresholds
+    rules:
+      - alert: HighCpuUsage
+        expr: system_cpu_usage_percent > 85
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.host }}"
+          description: "CPU usage has been above 85% for 2 minutes (current value: {{ $value }}%)."
+
+      - alert: HighMemoryUsage
+        expr: system_memory_usage > 90
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage has been above 90% for 2 minutes (current value: {{ $value }}%)."
+
+      - alert: HighDiskUsage
+        expr: system_disk_usage > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk usage"
+          description: "Disk usage has been above 90% for 5 minutes (current value: {{ $value }}%)."
+
+      - alert: CriticalDiskUsage
+        expr: system_disk_usage > 97
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical disk usage"
+          description: "Disk usage has exceeded 97% (current value: {{ $value }}%). Disk may fill up imminently."
+
+  - name: system-anomaly
+    rules:
+      - alert: AnomalousSystemBehavior
+        expr: system_anomaly_detected == 1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Anomalous system behavior detected on {{ $labels.host }}"
+          description: "The IsolationForest anomaly model has flagged current CPU/memory/network behavior as anomalous for at least 1 minute."
+
+  - name: exporter-health
+    rules:
+      - alert: ExporterDown
+        expr: up{job="local-agent"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Metrics exporter is down"
+          description: "Prometheus has not been able to scrape the local-agent exporter for over 1 minute."

@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+psutil
+prometheus_client
+scikit-learn
+numpy
+gputil

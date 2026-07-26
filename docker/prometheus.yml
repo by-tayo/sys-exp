@@ -1,0 +1,39 @@
+# Prometheus config for the Docker Compose stack (docker-compose.yml).
+# Differs from the root prometheus.yml only in target hostnames: containers
+# on the compose network address each other by service name, not localhost.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "/etc/prometheus/alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+scrape_configs:
+
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "local-agent"
+    static_configs:
+      - targets: ["exporter:8000"]
+        labels:
+          instance: "docker-exporter"
+          os: "linux"
+
+      # Optional: also scrape an exporter running natively on the host
+      # (python main.py --port 8001) alongside this compose stack, to get
+      # real host-level metrics (actual hostname, disk, network, battery)
+      # instead of just the container's own virtualized view.
+      # host.docker.internal lets containers reach the host on Docker
+      # Desktop (Windows/Mac). Uncomment to enable:
+      # - targets: ["host.docker.internal:8001"]
+      #   labels:
+      #     instance: "native-windows"
+      #     os: "windows"
