@@ -1,6 +1,8 @@
+
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
+  scrape_timeout: 10s
 
 rule_files:
   - "/etc/prometheus/alert_rules.yml"
@@ -8,15 +10,20 @@ rule_files:
 alerting:
   alertmanagers:
     - static_configs:
-        - targets: ["alertmanager:9093"]
+        - targets:
+            - "alertmanager:9093"
 
 scrape_configs:
   - job_name: "prometheus"
     static_configs:
-      - targets: ["localhost:9090"]
+      - targets:
+          - "localhost:9090"
 
   - job_name: "local-agent"
+    scrape_interval: 15s
+    scrape_timeout: 10s
     static_configs:
-      - targets: ["host.docker.internal:8001"]
+      - targets:
+          - "exporter:8000"
         labels:
-          instance: "my-host"
+          instance: "docker-exporter"
