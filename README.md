@@ -1,8 +1,8 @@
 # System Information Exporter
 
-A host-level system metrics exporter built with FastAPI and the Prometheus Python client. Exposes CPU, memory, disk, network, process, and GPU metrics via HTTP — scrape-ready for Prometheus, visualized in Grafana, with alerting through Alertmanager and an `IsolationForest`-based anomaly detector baked in.
+A host-level system metrics exporter built with FastAPI and the Prometheus Python client. Exposes CPU, memory, disk, network, process, and GPU metrics via HTTP scrape-ready for Prometheus, visualized in Grafana, with alerting through Alertmanager and an `IsolationForest`-based anomaly detector baked in.
 
-Designed to run on a single device or across multiple machines over a Tailscale VPN — each device runs its own agent; Prometheus aggregates by scraping multiple targets under the same job.
+Designed to run on a single device or across multiple machines over a Tailscale VPN each device runs its own agent; Prometheus aggregates by scraping multiple targets under the same job.
 
 ---
 
@@ -25,18 +25,18 @@ Designed to run on a single device or across multiple machines over a Tailscale 
 **System**
 - CPU usage (percent, per-core)
 - Memory: used, available, percent
-- Disk: used, free, percent — resolves root per-OS (`C:\` on Windows, `/` on Linux/macOS)
+- Disk: used, free, percent resolves root per-OS (`C:\` on Windows, `/` on Linux/macOS)
 - Network: bytes sent/received, packets, errors
 - Processes: PID, CPU%, memory%, RSS, thread count, status
 
 **GPU** (NVIDIA only, degrades gracefully if unavailable)
-- Load percent, memory used/total, temperature — per GPU via `/api/gpu`
+- Load percent, memory used/total, temperature per GPU via `/api/gpu`
 
 **Anomaly**
-- `system_anomaly_detected` gauge — fires when current sample is anomalous relative to the trained model
+- `system_anomaly_detected` gauge fires when current sample is anomalous relative to the trained model
 
 **Exporter health**
-- `exporter_up` — 1 if the agent is reachable
+- `exporter_up` - 1 if the agent is reachable
 
 Full Prometheus exposition at `/metrics`. REST snapshot at `/api/*`. Interactive docs at `/docs`.
 
@@ -44,7 +44,7 @@ Full Prometheus exposition at `/metrics`. REST snapshot at `/api/*`. Interactive
 
 ## Alerting
 
-`alert_rules.yml` defines threshold alerts for CPU, memory, and disk, an exporter-down alert, and an `AnomalousSystemBehavior` alert wired to `system_anomaly_detected`. Rules evaluate and appear at Prometheus's `/alerts` without Alertmanager — Alertmanager is only needed for routing to email, Slack, or a webhook. A reference config is in `alertmanager.yml`.
+`alert_rules.yml` defines threshold alerts for CPU, memory, and disk, an exporter-down alert, and an `AnomalousSystemBehavior` alert wired to `system_anomaly_detected`. Rules evaluate and appear at Prometheus's `/alerts` without Alertmanager. Alertmanager is only needed for routing to email, Slack, or a webhook. A reference config is in `alertmanager.yml`.
 
 ---
 
@@ -85,7 +85,7 @@ Tear down: `docker compose down` (add `-v` to drop Prometheus and Grafana data v
 
 ## Multi-Device Setup (Tailscale)
 
-Each device runs its own agent. Prometheus aggregates by scraping multiple targets under the `local-agent` job — no extra component needed. For cross-device monitoring without exposing LAN IPs, agents bind to their Tailscale address; Prometheus scrapes over the Tailscale network.
+Each device runs its own agent. Prometheus aggregates by scraping multiple targets under the `local-agent` job no extra component needed. For cross-device monitoring without exposing LAN IPs, agents bind to their Tailscale address; Prometheus scrapes over the Tailscale network.
 
 ```yaml
 # prometheus.yml — add one entry per device
@@ -107,8 +107,8 @@ Two `prometheus.yml` variants are intentionally included:
 
 | File | Used when |
 |---|---|
-| `prometheus.yml` | Running services directly on the host — scrapes `localhost:8000` |
-| `docker/prometheus.yml` | Docker Compose stack — scrapes `exporter:8000` (containers address each other by service name) |
+| `prometheus.yml` | Running services directly on the host scrapes `localhost:8000` |
+| `docker/prometheus.yml` | Docker Compose stack scrapes `exporter:8000` (containers address each other by service name) |
 
 Both are identical except for target hostnames.
 
@@ -133,7 +133,7 @@ Both are identical except for target hostnames.
 
 ## Long-Term Storage
 
-By default Prometheus retains samples only for its local retention window. For long-term trend analysis, uncomment the `remote_write` block in `prometheus.yml` and point it at a remote-write-compatible backend — [VictoriaMetrics](https://victoriametrics.com/) single-node is a one-line Docker run, or Thanos Receive for a multi-instance setup.
+By default Prometheus retains samples only for its local retention window. For long-term trend analysis, uncomment the `remote_write` block in `prometheus.yml` and point it at a remote-write-compatible backend [VictoriaMetrics](https://victoriametrics.com/) single-node is a one-line Docker run, or Thanos Receive for a multi-instance setup.
 
 ---
 
