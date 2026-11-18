@@ -1,17 +1,40 @@
+
 name: sys-exp
 
 services:
+  exporter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sys-exp-exporter:latest
+    container_name: sys-exp-exporter
+    ports:
+      - "${EXPORTER_PORT:-8000}:8000"
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
   prometheus:
     image: prom/prometheus:v3.5.0
     container_name: sys-exp-prometheus
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     volumes:
       - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
       - prometheus-data:/prometheus
     ports:
       - "${PROMETHEUS_PORT:-9090}:9090"
+    depends_on:
+      exporter:
+        condition: service_healthy
     restart: unless-stopped
 
   alertmanager:
