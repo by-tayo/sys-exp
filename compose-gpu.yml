@@ -1,3 +1,4 @@
-services:
-  exporter:
-    gpus: all
+docker compose \
+  -f docker-compose.yml \
+  -f compose-gpu.yml \
+  up --build -d
