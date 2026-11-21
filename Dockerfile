@@ -2,14 +2,14 @@
 
 # Pinned by digest (python:3.11-slim) rather than a floating tag so rebuilds
 # are reproducible. Keep in sync via the docker-ecosystem Dependabot entry.
-FROM python:3.11-slim@sha256:07d4824036af339fa1b6ef769cc99d9c10a141769538b52b3b597c84f7a7b535 AS builder
+FROM python:3.15-slim@sha256:65a65fc7b30b06cb6df4930fd4650697cb23f4c2698ab81fc87e4b031bc36928 AS builder
 
 WORKDIR /app
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
-FROM python:3.11-slim@sha256:07d4824036af339fa1b6ef769cc99d9c10a141769538b52b3b597c84f7a7b535
+FROM python:3.15-slim@sha256:65a65fc7b30b06cb6df4930fd4650697cb23f4c2698ab81fc87e4b031bc36928
 
 LABEL org.opencontainers.image.source="https://github.com/by-tayo/sys-exp" \
       org.opencontainers.image.description="Cross-platform system metrics exporter for Prometheus" \
