@@ -10,3 +10,8 @@ docker-compose.yml
 alert_rules.yml
 alertmanager.yml
 prometheus.yml
+tests
+data
+.github
+requirements-dev.txt
+.env

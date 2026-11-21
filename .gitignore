@@ -1,0 +1,6 @@
+# ...standard GitHub Python .gitignore (byte-compiled files, build/dist, venvs, etc.)...
+
+# sys-exp specific
+data/
+*.joblib
+.env

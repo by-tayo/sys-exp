@@ -52,7 +52,7 @@ Full Prometheus exposition at `/metrics`. REST snapshot at `/api/*`. Interactive
 
 `net_observer.py` implements a `NetworkObserver` that trains an `IsolationForest` online on CPU/memory/network samples collected during each Prometheus scrape. Once 50 samples have been observed, `/api/anomaly` and the `system_anomaly_detected` gauge report whether the current sample is anomalous relative to the model. The alert fires off that gauge like any threshold rule.
 
-Known limitation: the model resets on restart. Persisting to disk and retraining on a rolling window is the next planned improvement.
+The trained model and its training buffer are persisted to disk (`data/model.joblib` by default, override with `SYS_EXP_MODEL_PATH`) on shutdown and reloaded on startup, so the exporter doesn't need to relearn "normal" behavior after a restart. Under Docker Compose, this is backed by the `exporter-data` named volume — make sure it isn't dropped (`docker compose down -v`) if you want to keep the trained model.
 
 ---
 
@@ -79,7 +79,15 @@ docker run -p 8000:8000 sys-exp
 pip install -r requirements.txt && python main.py --port 8000
 ```
 
-Tear down: `docker compose down` (add `-v` to drop Prometheus and Grafana data volumes).
+Tear down: `docker compose down` (add `-v` to drop Prometheus, Grafana, Alertmanager, **and the exporter's persisted anomaly model** data volumes).
+
+**With GPU metrics (NVIDIA):**
+
+Requires the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) on the host. Layer `compose-gpu.yml` on top of the base stack to pass the host's GPUs through to the exporter container:
+
+```bash
+docker compose -f docker-compose.yml -f compose-gpu.yml up --build
+```
 
 ---
 
